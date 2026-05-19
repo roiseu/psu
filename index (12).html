@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PSU CRM & Project Management System | Pacific States University</title>
+<meta name="description" content="Enterprise CRM & Project Management for Pacific States University — By Konkuk University Foundation"/>
+<meta name="author" content="Roise Uddin"/>
+<meta property="og:title" content="PSU CRM & PM System"/>
+<meta property="og:description" content="Enterprise CRM & PM platform — Pacific States University"/>
+<meta property="og:type" content="website"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --g:#1a5c38;--gd:#0f3d20;--gl:#236b44;--gp:#e8f5ee;
+  --bg:#f0f4f8;--surface:#fff;--border:#f1f5f9;--border2:#e2e8f0;
+  --t1:#1e293b;--t2:#64748b;--t3:#94a3b8;
+  --r:12px;--rs:8px;--sh:0 1px 4px rgba(0,0,0,.05);
+  --sidebar-w:224px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--t1);}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px;}
+button{cursor:pointer;font-family:inherit;}
+a{text-decoration:none;}
+input,select{font-family:inherit;}
+
+/* ── Layout ───────────────────────────────────── */
+#app{display:flex;height:100vh;overflow:hidden;}
+#sidebar{width:var(--sidebar-w);background:var(--gd);display:flex;flex-direction:column;flex-shrink:0;transition:width .2s;overflow:hidden;}
+#sidebar.col{width:60px;}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+#topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;position:relative;z-index:5;}
+#content{flex:1;overflow-y:auto;}
+
+/* ── Sidebar ──────────────────────────────────── */
+.logo-wrap{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px;min-height:64px;}
+.col .logo-wrap{padding:14px 10px;justify-content:center;}
+.logo-mark{width:36px;height:36px;background:#fff;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-mark .psu{color:var(--g);font-weight:900;font-size:10px;font-family:Georgia,serif;line-height:1.1;}
+.logo-mark .yr{color:var(--g);font-weight:700;font-size:6.5px;line-height:1;}
+.logo-text .u1{color:#fff;font-weight:800;font-size:13px;line-height:1.1;font-family:Georgia,serif;}
+.logo-text .u2{color:rgba(255,255,255,.4);font-size:9px;margin-top:1px;white-space:nowrap;}
+.col .logo-text{display:none;}
+.nav-label{padding:8px 16px 3px;font-size:9px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;}
+.col .nav-label{display:none;}
+nav{flex:1;padding:4px;overflow-y:auto;overflow-x:hidden;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border:none;border-radius:8px;margin-bottom:1px;background:transparent;color:rgba(255,255,255,.55);font-size:12px;font-weight:500;width:100%;text-align:left;transition:all .15s;position:relative;white-space:nowrap;}
+.nav-item:hover{background:rgba(255,255,255,.10);}
+.nav-item.active{background:rgba(255,255,255,.16);color:#fff;font-weight:700;}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:55%;background:#fff;border-radius:0 2px 2px 0;}
+.col .nav-item{justify-content:center;padding:9px;}
+.col .nav-item span.label{display:none;}
+.nav-item .ic{font-size:14px;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:rgba(255,255,255,.18);color:#fff;font-size:8px;padding:2px 5px;border-radius:8px;font-weight:800;flex-shrink:0;}
+.col .nav-badge{display:none;}
+.sidebar-foot{border-top:1px solid rgba(255,255,255,.08);padding:10px 6px;}
+.user-pill{display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:rgba(255,255,255,.08);margin-bottom:6px;}
+.col .user-pill{display:none;}
+.user-pill .av{width:28px;height:28px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:10px;flex-shrink:0;}
+.user-pill .un{color:#fff;font-size:11px;font-weight:700;}
+.user-pill .ur{color:rgba(255,255,255,.5);font-size:9px;}
+.toggle-btn{width:100%;display:flex;justify-content:center;padding:6px;background:none;border:none;color:rgba(255,255,255,.5);border-radius:6px;font-size:14px;}
+.toggle-btn:hover{background:rgba(255,255,255,.10);}
+
+/* ── Topbar ───────────────────────────────────── */
+.search-wrap{position:relative;flex:1;max-width:300px;}
+.search-wrap input{width:100%;background:#f8fafc;border:1px solid var(--border2);border-radius:8px;padding:7px 10px 7px 30px;font-size:12px;color:var(--t1);outline:none;}
+.search-wrap input:focus{border-color:var(--g);}
+.search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--t3);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:6px;}
+.sem-badge{padding:4px 10px;background:var(--gp);border-radius:20px;font-size:11px;font-weight:700;color:var(--g);}
+.icon-btn{padding:6px 8px;background:none;border:none;border-radius:8px;font-size:14px;color:var(--t2);transition:background .15s;position:relative;}
+.icon-btn:hover{background:#f1f5f9;}
+.notif-dot{position:absolute;top:3px;right:4px;width:6px;height:6px;border-radius:50%;background:#ef4444;border:1.5px solid #fff;}
+.profile-btn{display:flex;align-items:center;gap:6px;padding:4px 8px;background:none;border:none;border-left:1px solid var(--border);border-radius:0;margin-left:2px;}
+.profile-btn:hover{background:#f8fafc;}
+.profile-btn .av{width:28px;height:28px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:10px;}
+.profile-btn .pn{font-size:11px;font-weight:700;color:var(--t1);}
+.profile-btn .pr{font-size:9px;color:var(--t3);}
+.gh-btn{padding:5px 12px;background:#1e293b;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px;}
+.gh-btn:hover{background:#0f172a;}
+
+/* ── Dropdown ─────────────────────────────────── */
+.dropdown{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.12);border:1px solid var(--border);z-index:100;overflow:hidden;min-width:260px;}
+.dropdown-head{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.dropdown-head span{font-weight:700;font-size:12px;}
+.dropdown-head a{font-size:11px;color:var(--g);font-weight:600;}
+.notif-item{padding:9px 14px;border-bottom:1px solid #f8fafc;display:flex;gap:8px;align-items:flex-start;}
+.notif-item:hover{background:#f8fafc;}
+.notif-dot2{width:6px;height:6px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.notif-text{font-size:12px;color:#374151;}
+.notif-time{font-size:10px;color:var(--t3);margin-top:1px;}
+
+/* ── Cards ────────────────────────────────────── */
+.card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh);}
+.card-hover{transition:all .18s;}
+.card-hover:hover{box-shadow:0 4px 18px rgba(26,92,56,.1);transform:translateY(-1px);}
+.page{padding:22px;display:flex;flex-direction:column;gap:18px;animation:fi .25s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+
+/* ── Banner ───────────────────────────────────── */
+.banner{padding:20px 24px;background:var(--g);border-radius:var(--r);color:#fff;position:relative;overflow:hidden;}
+.banner-psu{position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:80px;font-family:Georgia,serif;font-weight:900;color:rgba(255,255,255,.07);}
+.banner h1{font-size:21px;font-weight:800;}
+.banner p{font-size:13px;color:rgba(255,255,255,.7);margin-top:3px;}
+.banner-meta{display:flex;gap:18px;margin-top:12px;}
+.banner-meta span{font-size:12px;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:5px;}
+.banner-meta span::before{content:'';width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.5);flex-shrink:0;}
+
+/* ── KPI Grid ─────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
+.kpi{padding:14px;cursor:pointer;}
+.kpi-ic{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:8px;}
+.kpi-row{display:flex;justify-content:space-between;align-items:flex-start;}
+.kpi-val{font-size:22px;font-weight:800;color:var(--t1);margin-top:4px;}
+.kpi-lbl{font-size:11px;color:var(--t3);margin-top:2px;}
+.kpi-ch{font-size:11px;font-weight:700;}
+.up{color:#16a34a;}
+.dn{color:#dc2626;}
+
+/* ── Chart Row ────────────────────────────────── */
+.chart-row{display:grid;grid-template-columns:2fr 1fr;gap:16px;}
+.chart-card{padding:18px;}
+.chart-title{font-weight:700;color:var(--t1);font-size:14px;}
+.chart-sub{font-size:12px;color:var(--t3);margin-bottom:14px;margin-top:2px;}
+canvas{max-width:100%;}
+
+/* ── Two Col ──────────────────────────────────── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+/* ── Activity ─────────────────────────────────── */
+.act-list{display:flex;flex-direction:column;gap:11px;}
+.act-item{display:flex;align-items:flex-start;gap:10px;}
+.act-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.act-text{font-size:13px;color:#374151;}
+.act-time{font-size:11px;color:var(--t3);margin-top:2px;}
+
+/* ── Project List ─────────────────────────────── */
+.proj-list{display:flex;flex-direction:column;gap:8px;}
+.proj-row{display:flex;align-items:center;gap:10px;padding:7px;border-radius:8px;cursor:pointer;}
+.proj-row:hover{background:#f8fafc;}
+.proj-ic{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.proj-name{font-size:13px;font-weight:600;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.prog-wrap{display:flex;align-items:center;gap:6px;margin-top:3px;}
+.prog-bar{flex:1;height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;transition:width .4s;}
+.prog-pct{font-size:10px;color:var(--t3);flex-shrink:0;}
+
+/* ── Badge ────────────────────────────────────── */
+.bdg{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap;}
+
+/* ── Section Header ───────────────────────────── */
+.sec-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.sec-head h2{font-size:20px;font-weight:800;color:var(--t1);}
+.sec-head p{font-size:13px;color:var(--t3);margin-top:2px;}
+.btn-primary{padding:8px 14px;background:var(--g);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;}
+.btn-primary:hover{background:var(--gl);}
+.btn-outline{padding:8px 12px;border:1px solid var(--border2);border-radius:8px;font-size:12px;color:var(--t2);background:#fff;}
+.btn-outline:hover{background:#f8fafc;}
+
+/* ── View Toggle ──────────────────────────────── */
+.view-toggle{display:flex;background:#f1f5f9;border-radius:8px;padding:2px;gap:2px;}
+.vt-btn{padding:5px 12px;font-size:11px;font-weight:600;border-radius:6px;border:none;background:transparent;color:var(--t3);text-transform:capitalize;}
+.vt-btn.active{background:#fff;color:var(--t1);box-shadow:0 1px 3px rgba(0,0,0,.06);}
+
+/* ── Table ────────────────────────────────────── */
+.tbl-wrap{overflow:hidden;border-radius:var(--r);}
+table{width:100%;border-collapse:collapse;}
+thead th{text-align:left;padding:9px 12px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;background:#f8fafc;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid #f8fafc;}
+tbody tr:hover{background:#f8fafc;cursor:pointer;}
+tbody td{padding:10px 12px;}
+.td-name{font-size:13px;font-weight:600;color:var(--t1);}
+.td-sub{font-size:11px;color:var(--t3);}
+.td-num{font-size:13px;font-weight:700;color:var(--t1);}
+.td-muted{font-size:12px;color:var(--t2);}
+.row-ic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.td-flex{display:flex;align-items:center;gap:8px;}
+.td-actions{display:flex;gap:3px;}
+.act-btn{padding:3px 5px;background:none;border:none;font-size:12px;border-radius:4px;}
+.act-btn:hover{background:#f1f5f9;}
+
+/* ── Avatar cluster ───────────────────────────── */
+.av-cluster{display:flex;}
+.av-cluster .av{margin-left:-4px;}
+.av-cluster .av:first-child{margin-left:0;}
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;}
+.av-xs{width:18px;height:18px;font-size:8px;}
+.av-sm{width:28px;height:28px;font-size:10px;}
+.av-md{width:36px;height:36px;font-size:12px;}
+
+/* ── Kanban ───────────────────────────────────── */
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.kb-col{background:#f8fafc;border-radius:12px;padding:12px;}
+.kb-col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.kb-col-title{font-size:13px;font-weight:700;color:#374151;}
+.kb-count{background:#e2e8f0;color:var(--t2);font-size:11px;padding:1px 7px;border-radius:20px;font-weight:600;}
+.kb-add{font-size:18px;color:var(--t3);background:none;border:none;line-height:1;}
+.kb-cards{display:flex;flex-direction:column;gap:8px;}
+.kb-card{background:#fff;border-radius:10px;padding:12px;border:1px solid var(--border);cursor:pointer;transition:all .15s;}
+.kb-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);transform:translateY(-1px);}
+.kb-title{font-size:13px;color:var(--t1);line-height:1.4;font-weight:500;margin-bottom:8px;}
+.kb-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid #f8fafc;}
+.kb-due{font-size:11px;color:var(--t3);}
+
+/* ── CRM Pipeline ─────────────────────────────── */
+.pipeline-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
+.pipe-card{padding:14px;text-align:center;}
+.pipe-count{font-size:26px;font-weight:800;color:var(--t1);margin:8px 0 2px;}
+.pipe-val{font-size:11px;color:var(--t3);}
+
+/* ── Team Cards ───────────────────────────────── */
+.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.team-card{padding:18px;cursor:pointer;}
+.team-card:hover{box-shadow:0 4px 18px rgba(26,92,56,.1);transform:translateY(-1px);}
+.team-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;}
+.team-name{font-size:14px;font-weight:700;color:var(--t1);}
+.team-dept{font-size:11px;color:var(--t3);}
+.status-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;}
+.team-body{border-top:1px solid #f8fafc;padding-top:10px;display:flex;flex-direction:column;gap:5px;}
+.team-email{font-size:11px;color:var(--t2);}
+.team-foot{display:flex;justify-content:space-between;align-items:center;margin-top:3px;}
+.since{font-size:10px;color:var(--t3);}
+
+/* ── Storage ──────────────────────────────────── */
+.stor-bar-wrap{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+.stor-bar{height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;}
+.stor-fill{height:100%;border-radius:4px;}
+.stor-meta{display:flex;gap:16px;}
+.stor-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--t2);}
+.stor-dot{width:8px;height:8px;border-radius:50%;}
+
+/* ── Reports ──────────────────────────────────── */
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.funnel-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.funnel-lbl{font-size:11px;color:var(--t3);width:90px;text-align:right;flex-shrink:0;}
+.funnel-bar{border-radius:6px;display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:700;color:#fff;height:28px;transition:width .4s;}
+.budget-row{margin-bottom:11px;}
+.budget-head{display:flex;justify-content:space-between;margin-bottom:3px;}
+.budget-name{font-size:12px;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%;}
+.budget-amt{font-size:11px;color:var(--t3);flex-shrink:0;}
+
+/* ── AI ───────────────────────────────────────── */
+.ai-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.ai-icon{width:44px;height:44px;border-radius:12px;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:22px;}
+.ai-title{font-size:20px;font-weight:800;color:var(--t1);}
+.ai-sub{font-size:12px;color:var(--t3);}
+.ai-live{padding:4px 10px;border-radius:20px;background:rgba(26,92,56,.12);color:var(--g);font-size:11px;font-weight:800;margin-left:auto;}
+.chat-box{background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;height:340px;}
+.msg{display:flex;}
+.msg.user{justify-content:flex-end;}
+.msg-bubble{max-width:72%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.55;}
+.msg.ai .msg-bubble{background:#f8fafc;color:#374151;border:1px solid var(--border);border-radius:14px 14px 14px 4px;}
+.msg.user .msg-bubble{background:var(--g);color:#fff;border-radius:14px 14px 4px 14px;}
+.chip-wrap{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;}
+.chip{font-size:11px;padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:#fff;color:var(--t2);}
+.chip:hover{border-color:var(--g);color:var(--g);}
+.ai-input-row{display:flex;gap:8px;}
+.ai-input{flex:1;padding:10px 14px;border:1px solid var(--border2);border-radius:10px;font-size:13px;outline:none;}
+.ai-input:focus{border-color:var(--g);}
+.ai-send{padding:10px 20px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;}
+.ai-send:hover{background:var(--gl);}
+.ai-send:disabled{background:#94a3b8;cursor:not-allowed;}
+.thinking{color:var(--t3);font-size:13px;animation:pulse 1.8s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* ── Placeholder ──────────────────────────────── */
+.placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px;text-align:center;}
+.placeholder .pl-ic{font-size:48px;margin-bottom:14px;}
+.placeholder h3{font-size:18px;font-weight:700;color:#374151;}
+.placeholder p{font-size:13px;color:var(--t3);margin-top:5px;}
+.placeholder a{margin-top:16px;padding:8px 20px;background:var(--g);color:#fff;border-radius:8px;font-size:13px;font-weight:600;}
+
+/* ── Section View Link ─────────────────────────── */
+.view-more{font-size:12px;color:var(--g);font-weight:600;background:none;border:none;cursor:pointer;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="logo-wrap">
+      <div class="logo-mark"><div class="psu">PSU</div><div class="yr">1928</div></div>
+      <div class="logo-text">
+        <div class="u1">Pacific States</div>
+        <div class="u1">University</div>
+        <div class="u2">Konkuk University Foundation</div>
+      </div>
+    </div>
+    <div class="nav-label">Navigation</div>
+    <nav id="nav"></nav>
+    <div class="sidebar-foot">
+      <div class="user-pill">
+        <div class="av av-sm" style="background:#1a5c38">RU</div>
+        <div><div class="un">Roise Uddin</div><div class="ur">Super Admin · IEEE Sr.</div></div>
+      </div>
+      <button class="toggle-btn" id="collapseBtn">←</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <!-- TOPBAR -->
+    <div id="topbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="search" placeholder="Search projects, tasks, contacts…"/>
+      </div>
+      <div class="topbar-right">
+        <span class="sem-badge">Fall 2025</span>
+        <div style="position:relative">
+          <button class="icon-btn" id="notifBtn">🔔<span class="notif-dot"></span></button>
+          <div class="dropdown" id="notifDrop" style="display:none">
+            <div class="dropdown-head"><span>Notifications</span><a href="#">Mark all read</a></div>
+            <div id="notifList"></div>
+          </div>
+        </div>
+        <a href="https://github.com/roiseu" target="_blank" class="gh-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+        <button class="profile-btn" style="cursor:default">
+          <div class="av av-sm" style="background:#1a5c38">RU</div>
+          <div><div class="pn">Roise Uddin</div><div class="pr">Super Admin</div></div>
+        </button>
+      </div>
+    </div>
+    <!-- CONTENT -->
+    <div id="content"></div>
+  </div>
+</div>
+
+<script>
+/* ── Data ─────────────────────────────────────── */
+const G='#1a5c38';
+const navItems=[
+  {id:'dashboard',l:'Dashboard',ic:'📊'},
+  {id:'projects',l:'Projects',ic:'📁'},
+  {id:'crm',l:'CRM',ic:'💼'},
+  {id:'team',l:'Team',ic:'👥'},
+  {id:'documents',l:'Documents',ic:'📄'},
+  {id:'reports',l:'Reports',ic:'📈'},
+  {id:'ai',l:'AI Assistant',ic:'⚡',badge:'AI'},
+  {id:'settings',l:'Settings',ic:'⚙️'},
+];
+const kpis=[
+  {l:'Total Projects',v:24,ch:'+3',up:true,ic:'📁',c:'#1a5c38'},
+  {l:'Active Tasks',v:142,ch:'+18',up:true,ic:'✅',c:'#2563eb'},
+  {l:'Completed',v:89,ch:'+12',up:true,ic:'🎯',c:'#16a34a'},
+  {l:'Team Members',v:47,ch:'+5',up:true,ic:'👥',c:'#7c3aed'},
+  {l:'Pending',v:23,ch:'-4',up:false,ic:'⏳',c:'#d97706'},
+  {l:'Storage',v:'68%',ch:'+2%',up:false,ic:'💾',c:'#dc2626'},
+];
+const projects=[
+  {id:1,name:'ENPS Newsroom System',status:'In Progress',pri:'High',prog:75,dead:'2026-06-15',team:['RU','AN','MK'],budget:45000,spent:32000},
+  {id:2,name:'PSU Homepage Redesign',status:'In Progress',pri:'High',prog:60,dead:'2026-05-30',team:['RU','JL'],budget:12000,spent:8500},
+  {id:3,name:'IEEE Student Branch Portal',status:'Completed',pri:'Medium',prog:100,dead:'2026-04-20',team:['AN','SP'],budget:8000,spent:7800},
+  {id:4,name:'CRM Implementation',status:'Pending',pri:'High',prog:15,dead:'2026-08-01',team:['MK','JL','RU'],budget:65000,spent:9750},
+  {id:5,name:'Legacy Vault App v2',status:'On Hold',pri:'Low',prog:40,dead:'2026-09-15',team:['SP','AN'],budget:28000,spent:11200},
+  {id:6,name:'Faculty Training Portal',status:'In Progress',pri:'Medium',prog:35,dead:'2026-07-01',team:['RU','JL'],budget:15000,spent:5250},
+];
+const kanban={
+  'To Do':[{id:1,title:'Design database schema for CRM',pri:'High',av:'RU',due:'May 25'},{id:2,title:'Setup Docker containerization',pri:'Medium',av:'MK',due:'May 28'},{id:3,title:'Write API documentation',pri:'Low',av:'AN',due:'Jun 2'}],
+  'In Progress':[{id:4,title:'Implement JWT authentication flow',pri:'High',av:'RU',due:'May 22'},{id:5,title:'Build Kanban drag-and-drop UI',pri:'High',av:'JL',due:'May 23'},{id:6,title:'Integrate Socket.io realtime',pri:'Medium',av:'SP',due:'May 26'}],
+  'Review':[{id:7,title:'User role permissions system',pri:'High',av:'MK',due:'May 20'},{id:8,title:'PDF export module',pri:'Medium',av:'AN',due:'May 21'}],
+  'Completed':[{id:9,title:'Initial project setup & CI/CD',pri:'Medium',av:'RU',due:'May 15'},{id:10,title:'PSU branding & design system',pri:'High',av:'JL',due:'May 16'},{id:11,title:'Database migrations setup',pri:'Medium',av:'SP',due:'May 17'}],
+};
+const customers=[
+  {id:1,name:'Desh Media Group',contact:'Ahmed Rahman',email:'a.rahman@deshmedia.com',stage:'Client',value:125000,industry:'Media'},
+  {id:2,name:'Pacific Tech Solutions',contact:'Sarah Chen',email:'s.chen@pactech.com',stage:'Negotiation',value:48000,industry:'Technology'},
+  {id:3,name:'GlobalEd Foundation',contact:'Dr. James Osei',email:'j.osei@globaled.org',stage:'Proposal',value:75000,industry:'Education'},
+  {id:4,name:'Soleris Wellness Ltd',contact:'Nasifa Rumali',email:'n.rumali@soleris.co',stage:'Active Lead',value:22000,industry:'Wellness'},
+  {id:5,name:'KU Foundation',contact:'Prof. Kim Min-jun',email:'minjun@kuf.ac.kr',stage:'Client',value:180000,industry:'Education'},
+  {id:6,name:'NetSec Alliance',contact:'Priya Sharma',email:'p.sharma@netsec.io',stage:'Cold Lead',value:35000,industry:'Cybersecurity'},
+];
+const team=[
+  {id:1,name:'Roise Uddin',role:'Super Admin',dept:'Engineering',email:'r.uddin@psu.edu',status:'Active',av:'RU',c:'#1a5c38',since:'2021'},
+  {id:2,name:'Nasifa Rumali',role:'Manager',dept:'Operations',email:'n.rumali@psu.edu',status:'Active',av:'NR',c:'#2563eb',since:'2022'},
+  {id:3,name:'Alex Nguyen',role:'Staff',dept:'Development',email:'a.nguyen@psu.edu',status:'Active',av:'AN',c:'#7c3aed',since:'2023'},
+  {id:4,name:'Maria Kim',role:'Admin',dept:'IT',email:'m.kim@psu.edu',status:'Active',av:'MK',c:'#d97706',since:'2022'},
+  {id:5,name:'James Liu',role:'Staff',dept:'Design',email:'j.liu@psu.edu',status:'Away',av:'JL',c:'#db2777',since:'2023'},
+  {id:6,name:'Sara Patel',role:'Student/Intern',dept:'Engineering',email:'s.patel@psu.edu',status:'Active',av:'SP',c:'#0891b2',since:'2024'},
+];
+const activities=[
+  {u:'RU',c:'#1a5c38',act:'Completed task',detail:'JWT Authentication Flow',t:'2m ago',dot:'#16a34a'},
+  {u:'JL',c:'#db2777',act:'Updated project',detail:'PSU Homepage – 60%',t:'15m ago',dot:'#2563eb'},
+  {u:'MK',c:'#d97706',act:'Added comment',detail:'Role Permissions review',t:'32m ago',dot:'#7c3aed'},
+  {u:'AN',c:'#7c3aed',act:'Created task',detail:'API Documentation',t:'1h ago',dot:'#94a3b8'},
+  {u:'NR',c:'#2563eb',act:'New CRM lead',detail:'NetSec Alliance – $35K',t:'2h ago',dot:'#d97706'},
+];
+const notifs=[
+  {text:'"JWT Auth Flow" due tomorrow',type:'warn',t:'5m ago'},
+  {text:'CRM Implementation approved',type:'ok',t:'1h ago'},
+  {text:'Message from Pacific Tech',type:'info',t:'2h ago'},
+  {text:'Storage at 68% – review soon',type:'warn',t:'3h ago'},
+];
+const docs=[
+  {n:'ENPS_Architecture.pdf',s:'2.4 MB',t:'PDF',t_c:'#fee2e2',t_fc:'#b91c1c',m:'2026-05-18',o:'RU',oc:'#1a5c38'},
+  {n:'PSU_CRM_Schema.xlsx',s:'156 KB',t:'XLSX',t_c:'#dcfce7',t_fc:'#15803d',m:'2026-05-17',o:'MK',oc:'#d97706'},
+  {n:'Project_Proposal.docx',s:'892 KB',t:'DOCX',t_c:'#dbeafe',t_fc:'#1d4ed8',m:'2026-05-15',o:'AN',oc:'#7c3aed'},
+  {n:'IEEE_Research_FedXIDS.pdf',s:'1.8 MB',t:'PDF',t_c:'#fee2e2',t_fc:'#b91c1c',m:'2026-05-14',o:'RU',oc:'#1a5c38'},
+  {n:'PSU_Brand_Guidelines.png',s:'3.2 MB',t:'IMG',t_c:'#ede9fe',t_fc:'#6d28d9',m:'2026-05-12',o:'JL',oc:'#db2777'},
+  {n:'Q2_Budget_Report.xlsx',s:'244 KB',t:'XLSX',t_c:'#dcfce7',t_fc:'#15803d',m:'2026-05-10',o:'NR',oc:'#2563eb'},
+];
+const areaData={labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep'],tasks:[45,52,68,74,89,98,112,128,142],done:[38,44,56,62,78,87,95,109,122]};
+const barData={labels:['Eng','Design','Ops','IT','Research'],total:[52,28,35,19,42],completed:[44,22,28,16,38]};
+const pieData=[{l:'Completed',v:89,c:'#16a34a'},{l:'In Progress',v:45,c:'#2563eb'},{l:'Review',v:28,c:'#7c3aed'},{l:'Pending',v:23,c:'#d97706'}];
+
+/* ── Badge helper ─────────────────────────────── */
+const badgeMap={
+  'In Progress':'background:#dbeafe;color:#1d4ed8',
+  'Completed':'background:#dcfce7;color:#15803d',
+  'Pending':'background:#fef9c3;color:#a16207',
+  'On Hold':'background:#f3f4f6;color:#6b7280',
+  'Review':'background:#ede9fe;color:#6d28d9',
+  'To Do':'background:#f3f4f6;color:#374151',
+  'High':'background:#fee2e2;color:#b91c1c',
+  'Medium':'background:#fef9c3;color:#a16207',
+  'Low':'background:#dcfce7;color:#15803d',
+  'Client':'background:#dcfce7;color:#15803d',
+  'Negotiation':'background:#dbeafe;color:#1d4ed8',
+  'Proposal':'background:#ede9fe;color:#6d28d9',
+  'Active Lead':'background:#ffedd5;color:#c2410c',
+  'Cold Lead':'background:#f3f4f6;color:#6b7280',
+  'Super Admin':'background:#fee2e2;color:#b91c1c',
+  'Admin':'background:#ffedd5;color:#c2410c',
+  'Manager':'background:#dbeafe;color:#1d4ed8',
+  'Staff':'background:#dcfce7;color:#15803d',
+  'Student/Intern':'background:#ede9fe;color:#6d28d9',
+};
+function bdg(s,sm){const st=badgeMap[s]||'background:#f3f4f6;color:#374151';return `<span class="bdg" style="${st};padding:${sm?'2px 6px':'2px 8px'}">${s}</span>`;}
+
+/* ── Avatar helper ────────────────────────────── */
+const avColors={RU:'#1a5c38',NR:'#2563eb',AN:'#7c3aed',MK:'#d97706',JL:'#db2777',SP:'#0891b2'};
+function av(i,sz='sm'){return `<div class="av av-${sz}" style="background:${avColors[i]||G}">${i}</div>`;}
+
+/* ── Progress helper ──────────────────────────── */
+function prog(v,c,h='5px'){return `<div style="background:#e5e7eb;border-radius:3px;height:${h};overflow:hidden"><div class="prog-fill" style="width:${v}%;background:${c||G};height:100%"></div></div>`;}
+
+/* ── Build Nav ────────────────────────────────── */
+const nav=document.getElementById('nav');
+navItems.forEach(item=>{
+  const btn=document.createElement('button');
+  btn.className='nav-item';
+  btn.dataset.id=item.id;
+  btn.innerHTML=`<span class="ic">${item.ic}</span><span class="label">${item.l}</span>${item.badge?`<span class="nav-badge">${item.badge}</span>`:''}`;
+  btn.onclick=()=>render(item.id);
+  nav.appendChild(btn);
+});
+
+/* ── Build Notifications ──────────────────────── */
+const dotC={warn:'#d97706',ok:'#16a34a',info:'#2563eb'};
+document.getElementById('notifList').innerHTML=notifs.map(n=>`
+  <div class="notif-item">
+    <div class="notif-dot2" style="background:${dotC[n.type]}"></div>
+    <div><div class="notif-text">${n.text}</div><div class="notif-time">${n.t}</div></div>
+  </div>`).join('');
+
+/* ── Charts registry ──────────────────────────── */
+const chartRegistry={};
+function destroyChart(id){if(chartRegistry[id]){chartRegistry[id].destroy();delete chartRegistry[id];}}
+
+/* ── VIEWS ────────────────────────────────────── */
+function viewDashboard(){
+  return `<div class="page">
+  <div class="banner">
+    <h1>Good morning, Roise 👋</h1>
+    <p>PSU CRM & Project Management System — Pacific States University · Los Angeles, CA</p>
+    <div class="banner-meta">
+      <span>Live Demo · GitHub Pages</span>
+      <span>Stack: Next.js + Node.js</span>
+      <span>Author: Roise Uddin · IEEE Sr.</span>
+    </div>
+    <div class="banner-psu">PSU</div>
+  </div>
+  <div class="kpi-grid">
+    ${kpis.map(k=>`
+    <div class="card card-hover kpi">
+      <div class="kpi-row">
+        <div class="kpi-ic" style="background:${k.c}18">${k.ic}</div>
+        <span class="kpi-ch ${k.up?'up':'dn'}">${k.ch}</span>
+      </div>
+      <div class="kpi-val">${k.v}</div>
+      <div class="kpi-lbl">${k.l}</div>
+    </div>`).join('')}
+  </div>
+  <div class="chart-row">
+    <div class="card chart-card">
+      <div class="chart-title">Project & Task Analytics</div>
+      <div class="chart-sub">Last 9 months performance</div>
+      <canvas id="areaChart" height="80"></canvas>
+    </div>
+    <div class="card chart-card">
+      <div class="chart-title">Task Status</div>
+      <div class="chart-sub">Current distribution</div>
+      <canvas id="pieChart" height="120"></canvas>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-top:10px">
+        ${pieData.map(d=>`<div style="display:flex;justify-content:space-between;font-size:12px"><div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:${d.c}"></div><span style="color:#64748b">${d.l}</span></div><b style="color:#1e293b">${d.v}</b></div>`).join('')}
+      </div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card" style="padding:18px">
+      <div class="sec-head" style="margin-bottom:14px"><h2 style="font-size:14px">Recent Activity</h2><button class="view-more">View all</button></div>
+      <div class="act-list">
+        ${activities.map(a=>`<div class="act-item">${av(a.u)}<div style="flex:1;min-width:0"><div class="act-text"><b>${a.act}</b>: ${a.detail}</div><div class="act-time">${a.t}</div></div><div class="act-dot" style="background:${a.dot}"></div></div>`).join('')}
+      </div>
+    </div>
+    <div class="card" style="padding:18px">
+      <div class="sec-head" style="margin-bottom:14px"><h2 style="font-size:14px">Active Projects</h2><button class="view-more" onclick="render('projects')">View all →</button></div>
+      <div class="proj-list">
+        ${projects.filter(p=>p.status!=='Completed').slice(0,4).map(p=>`
+        <div class="proj-row">
+          <div class="proj-ic" style="background:${G}15">📁</div>
+          <div style="flex:1;min-width:0">
+            <div class="proj-name">${p.name}</div>
+            <div class="prog-wrap">${prog(p.prog)}<span class="prog-pct">${p.prog}%</span></div>
+          </div>
+          ${bdg(p.status)}
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+function viewProjects(){
+  const state={view:'table'};
+  const tableHTML=`
+  <div class="tbl-wrap card">
+  <table>
+    <thead><tr><th>Project</th><th>Status</th><th>Priority</th><th>Progress</th><th>Budget</th><th>Team</th><th>Deadline</th></tr></thead>
+    <tbody>
+      ${projects.map(p=>`<tr>
+        <td><div class="td-flex"><div class="row-ic" style="background:${G}12">📁</div><span class="td-name">${p.name}</span></div></td>
+        <td>${bdg(p.status)}</td><td>${bdg(p.pri)}</td>
+        <td><div style="display:flex;align-items:center;gap:6px;min-width:90px">${prog(p.prog)}<span style="font-size:11px;color:#94a3b8">${p.prog}%</span></div></td>
+        <td><span class="td-num">$${p.spent.toLocaleString()}</span><span class="td-muted">/$${p.budget.toLocaleString()}</span></td>
+        <td><div class="av-cluster">${p.team.map(t=>av(t,'xs')).join('')}</div></td>
+        <td class="td-muted">${p.dead}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table></div>`;
+
+  const kanbanHTML=`<div class="kanban">
+    ${Object.entries(kanban).map(([col,tasks])=>`
+    <div class="kb-col">
+      <div class="kb-col-head">
+        <div style="display:flex;align-items:center;gap:6px"><span class="kb-col-title">${col}</span><span class="kb-count">${tasks.length}</span></div>
+        <button class="kb-add">+</button>
+      </div>
+      <div class="kb-cards">
+        ${tasks.map(t=>`<div class="kb-card">
+          <div class="kb-title">${t.title}</div>
+          <div style="display:flex;align-items:center;justify-content:space-between">${bdg(t.pri,true)}<span class="kb-due">📅 ${t.due}</span></div>
+          <div class="kb-foot">${av(t.av,'xs')}<span style="font-size:12px;color:#cbd5e1">📎 💬</span></div>
+        </div>`).join('')}
+      </div>
+    </div>`).join('')}
+  </div>`;
+
+  return `<div class="page">
+  <div class="sec-head">
+    <div><h2>Projects</h2><p>Manage all university & business projects</p></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="view-toggle">
+        <button class="vt-btn active" id="vt-table" onclick="switchView('table')">Table</button>
+        <button class="vt-btn" id="vt-kanban" onclick="switchView('kanban')">Kanban</button>
+      </div>
+      <button class="btn-primary">+ New Project</button>
+    </div>
+  </div>
+  <div id="proj-view">${tableHTML}</div>
+  </div>`;
+
+  // store for switch
+  window._tableHTML=tableHTML;
+  window._kanbanHTML=kanbanHTML;
+}
+
+function switchView(v){
+  const t=document.getElementById('vt-table');
+  const k=document.getElementById('vt-kanban');
+  const pv=document.getElementById('proj-view');
+  if(!t||!k||!pv)return;
+  if(v==='table'){t.classList.add('active');k.classList.remove('active');pv.innerHTML=window._tableHTML||'';}
+  else{k.classList.add('active');t.classList.remove('active');pv.innerHTML=window._kanbanHTML||'';}
+}
+window.switchView=switchView;
+
+function viewCRM(){
+  const stages=['Cold Lead','Active Lead','Proposal','Negotiation','Client'];
+  const total=customers.reduce((a,c)=>a+c.value,0);
+  return `<div class="page">
+  <div class="sec-head">
+    <div><h2>CRM — Customer Relations</h2><p>Pipeline value: <b style="color:#1e293b">$${total.toLocaleString()}</b></p></div>
+    <button class="btn-primary">+ Add Customer</button>
+  </div>
+  <div class="pipeline-grid">
+    ${stages.map(s=>{
+      const ct=customers.filter(c=>c.stage===s).length;
+      const val=customers.filter(c=>c.stage===s).reduce((a,c)=>a+c.value,0);
+      return `<div class="card card-hover pipe-card">${bdg(s)}<div class="pipe-count">${ct}</div><div class="pipe-val">$${val.toLocaleString()}</div></div>`;
+    }).join('')}
+  </div>
+  <div class="tbl-wrap card">
+  <table>
+    <thead><tr><th>Company</th><th>Contact</th><th>Industry</th><th>Stage</th><th>Value</th><th>Actions</th></tr></thead>
+    <tbody>
+      ${customers.map(c=>`<tr>
+        <td><div class="td-flex"><div class="row-ic" style="background:#dbeafe">🏢</div><span class="td-name">${c.name}</span></div></td>
+        <td><div class="td-name" style="font-weight:500">${c.contact}</div><div class="td-sub">✉ ${c.email}</div></td>
+        <td class="td-muted">${c.industry}</td>
+        <td>${bdg(c.stage)}</td>
+        <td class="td-num">$${c.value.toLocaleString()}</td>
+        <td><div class="td-actions"><button class="act-btn">✏️</button><button class="act-btn">📞</button><button class="act-btn">✉️</button></div></td>
+      </tr>`).join('')}
+    </tbody>
+  </table></div>
+</div>`;
+}
+
+function viewTeam(){
+  return `<div class="page">
+  <div class="sec-head"><div><h2>Team Members</h2><p>${team.length} shown · 47 total</p></div><button class="btn-primary">+ Invite Member</button></div>
+  <div class="team-grid">
+    ${team.map(m=>`
+    <div class="card card-hover team-card">
+      <div class="team-head">
+        ${av(m.av,'md').replace('av-md',`av av-md`).replace('class="av',`class="av`).replace('background:'+avColors[m.av],`background:${m.c}`)}
+        <div style="flex:1;min-width:0"><div class="team-name">${m.name}</div><div class="team-dept">${m.dept}</div></div>
+        <div class="status-dot" style="background:${m.status==='Active'?'#16a34a':'#d97706'}"></div>
+      </div>
+      <div class="team-body">
+        <div class="team-email">✉ ${m.email}</div>
+        <div class="team-foot">${bdg(m.role)}<span class="since">Since ${m.since}</span></div>
+      </div>
+    </div>`).join('')}
+  </div>
+</div>`;
+}
+
+function viewDocuments(){
+  return `<div class="page">
+  <div class="sec-head"><div><h2>Documents & Storage</h2><p>68% of 100 GB used · 32 GB available</p></div><button class="btn-primary">⬆ Upload File</button></div>
+  <div class="card" style="padding:16px;margin-bottom:0">
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px"><span style="color:#374151">Storage Usage</span><b>68 GB / 100 GB</b></div>
+    <div class="stor-bar"><div class="stor-fill" style="width:68%;background:${G}"></div></div>
+    <div class="stor-meta" style="margin-top:10px">
+      ${[['PDF','35%','#ef4444'],['Media','22%','#8b5cf6'],['Docs','28%','#2563eb'],['Other','15%','#9ca3af']].map(([t,p,c])=>`<div class="stor-item"><div class="stor-dot" style="background:${c}"></div>${t} ${p}</div>`).join('')}
+    </div>
+  </div>
+  <div class="tbl-wrap card">
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Size</th><th>Modified</th><th>Owner</th><th>Actions</th></tr></thead>
+    <tbody>
+      ${docs.map(d=>`<tr>
+        <td><div class="td-flex"><span style="font-size:16px">📄</span><span class="td-name" style="font-weight:500">${d.n}</span></div></td>
+        <td><span style="background:${d.t_c};color:${d.t_fc};padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">${d.t}</span></td>
+        <td class="td-muted">${d.s}</td>
+        <td class="td-muted">${d.m}</td>
+        <td><div class="av av-xs" style="background:${d.oc}">${d.o}</div></td>
+        <td><div class="td-actions"><button class="act-btn">⬇️</button><button class="act-btn">✏️</button><button class="act-btn">🗑️</button></div></td>
+      </tr>`).join('')}
+    </tbody>
+  </table></div>
+</div>`;
+}
+
+function viewReports(){
+  return `<div class="page">
+  <div class="sec-head">
+    <div><h2>Reports & Analytics</h2><p>Comprehensive performance insights</p></div>
+    <div style="display:flex;gap:8px"><button class="btn-outline">⬇ Export PDF</button><button class="btn-outline">⬇ Export Excel</button></div>
+  </div>
+  <div class="report-grid">
+    <div class="card" style="padding:18px"><div class="chart-title" style="margin-bottom:14px">Departmental Task Performance</div><canvas id="barChart" height="110"></canvas></div>
+    <div class="card" style="padding:18px"><div class="chart-title" style="margin-bottom:14px">Monthly Project Growth</div><canvas id="lineChart" height="110"></canvas></div>
+    <div class="card" style="padding:18px">
+      <div class="chart-title" style="margin-bottom:14px">Budget Utilization</div>
+      ${projects.map(p=>{const pct=Math.round(p.spent/p.budget*100);return`<div class="budget-row"><div class="budget-head"><span class="budget-name">${p.name}</span><span class="budget-amt">$${p.spent.toLocaleString()}</span></div>${prog(pct,pct>90?'#ef4444':G,'7px')}</div>`;}).join('')}
+    </div>
+    <div class="card" style="padding:18px">
+      <div class="chart-title" style="margin-bottom:14px">CRM Sales Funnel</div>
+      ${['Cold Lead','Active Lead','Proposal','Negotiation','Client'].map((s,i)=>{
+        const ct=customers.filter(c=>c.stage===s).length;
+        const val=customers.filter(c=>c.stage===s).reduce((a,c)=>a+c.value,0);
+        const w=[100,80,65,50,38][i];
+        return`<div class="funnel-row"><span class="funnel-lbl">${s}</span><div class="funnel-bar" style="width:${w}%;background:${G};opacity:${0.28+i*0.14}">${ct} · $${val.toLocaleString()}</div></div>`;
+      }).join('')}
+    </div>
+  </div>
+</div>`;
+}
+
+function viewAI(){
+  const msgs=[{r:'a',t:"Hello! I'm your PSU AI Assistant, powered by Claude. I can help with project summaries, task recommendations, email drafting, and analytics. How can I help today?"}];
+  const sugg=['Summarize active projects','Which tasks are overdue?','Draft email to Pacific Tech','Analyze team productivity'];
+
+  window._aiMsgs=msgs;
+  window._aiLoading=false;
+
+  return `<div class="page">
+  <div class="ai-head">
+    <div class="ai-icon">⚡</div>
+    <div><div class="ai-title">AI Assistant</div><div class="ai-sub">Powered by Claude — smart insights, automation & analytics</div></div>
+    <div class="ai-live">LIVE AI</div>
+  </div>
+  <div class="chat-box" id="chatBox">
+    <div class="msg ai"><div class="msg-bubble">${msgs[0].t}</div></div>
+  </div>
+  <div class="chip-wrap">
+    ${sugg.map(s=>`<button class="chip" onclick="aiSend('${s}')">${s}</button>`).join('')}
+  </div>
+  <div class="ai-input-row">
+    <input class="ai-input" id="aiInput" placeholder="Ask about projects, tasks, or get AI insights…" onkeydown="if(event.key==='Enter')aiSend()"/>
+    <button class="ai-send" id="aiSendBtn" onclick="aiSend()">Send</button>
+  </div>
+</div>`;
+}
+
+window.aiSend=async function(text){
+  const input=document.getElementById('aiInput');
+  const box=document.getElementById('chatBox');
+  const btn=document.getElementById('aiSendBtn');
+  const m=text||(input?input.value:'');
+  if(!m.trim()||window._aiLoading)return;
+  if(input)input.value='';
+  window._aiLoading=true;
+  if(btn){btn.disabled=true;btn.textContent='…';}
+
+  // Add user message
+  if(box){
+    const ud=document.createElement('div');
+    ud.className='msg user';
+    ud.innerHTML=`<div class="msg-bubble">${m}</div>`;
+    box.appendChild(ud);
+    // Add thinking
+    const td=document.createElement('div');
+    td.className='msg ai';td.id='thinking';
+    td.innerHTML=`<div class="msg-bubble thinking">Thinking…</div>`;
+    box.appendChild(td);
+    box.scrollTop=box.scrollHeight;
+  }
+
+  try{
+    const history=window._aiMsgs.slice(1).map(msg=>({role:msg.r==='u'?'user':'assistant',content:msg.t}));
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:800,
+        system:'You are PSU AI Assistant for Pacific States University CRM & PM System. Faculty: Roise Uddin (Adjunct Instructor, IEEE Senior Member). Projects: ENPS Newsroom System, PSU Homepage Redesign, CRM Implementation, Legacy Vault App v2, Faculty Training Portal. Be concise and helpful.',
+        messages:[...history,{role:'user',content:m}]
+      })
+    });
+    const d=await res.json();
+    const reply=d.content?.[0]?.text||'Unable to process that request.';
+    window._aiMsgs.push({r:'u',t:m},{r:'a',t:reply});
+    if(box){
+      const th=document.getElementById('thinking');
+      if(th)th.remove();
+      const ad=document.createElement('div');
+      ad.className='msg ai';
+      ad.innerHTML=`<div class="msg-bubble">${reply.replace(/\n/g,'<br>')}</div>`;
+      box.appendChild(ad);
+      box.scrollTop=box.scrollHeight;
+    }
+  }catch(e){
+    window._aiMsgs.push({r:'u',t:m},{r:'a',t:'AI service unavailable. Please try again.'});
+    if(box){
+      const th=document.getElementById('thinking');
+      if(th)th.remove();
+      const ad=document.createElement('div');
+      ad.className='msg ai';
+      ad.innerHTML=`<div class="msg-bubble">AI service unavailable. Please try again.</div>`;
+      box.appendChild(ad);
+    }
+  }
+  window._aiLoading=false;
+  if(btn){btn.disabled=false;btn.textContent='Send';}
+};
+
+/* ── Render ───────────────────────────────────── */
+let currentView='';
+function render(id){
+  currentView=id;
+  // Update nav
+  document.querySelectorAll('.nav-item').forEach(b=>{
+    b.classList.toggle('active',b.dataset.id===id);
+  });
+  // Destroy charts
+  ['areaChart','pieChart','barChart','lineChart'].forEach(destroyChart);
+
+  const content=document.getElementById('content');
+  switch(id){
+    case 'dashboard': content.innerHTML=viewDashboard(); initDashboardCharts(); break;
+    case 'projects':
+      content.innerHTML=viewProjects();
+      // store views for toggle
+      window._tableHTML=content.querySelector('.tbl-wrap')?content.querySelector('.tbl-wrap').outerHTML:'';
+      window._kanbanHTML=buildKanban();
+      break;
+    case 'crm': content.innerHTML=viewCRM(); break;
+    case 'team': content.innerHTML=viewTeam(); break;
+    case 'documents': content.innerHTML=viewDocuments(); break;
+    case 'reports': content.innerHTML=viewReports(); initReportCharts(); break;
+    case 'ai': content.innerHTML=viewAI(); break;
+    default:
+      const ni=navItems.find(n=>n.id===id);
+      content.innerHTML=`<div class="placeholder"><div class="pl-ic">${ni?ni.ic:'🔧'}</div><h3>${ni?ni.l:id}</h3><p>Full implementation in Next.js + Node.js</p><a href="https://github.com/roiseu/psu" target="_blank">View Source on GitHub →</a></div>`;
+  }
+}
+
+function buildKanban(){
+  return `<div class="kanban">
+    ${Object.entries(kanban).map(([col,tasks])=>`
+    <div class="kb-col">
+      <div class="kb-col-head"><div style="display:flex;align-items:center;gap:6px"><span class="kb-col-title">${col}</span><span class="kb-count">${tasks.length}</span></div><button class="kb-add">+</button></div>
+      <div class="kb-cards">${tasks.map(t=>`<div class="kb-card"><div class="kb-title">${t.title}</div><div style="display:flex;align-items:center;justify-content:space-between">${bdg(t.pri,true)}<span class="kb-due">📅 ${t.due}</span></div><div class="kb-foot">${av(t.av,'xs')}<span style="font-size:12px;color:#cbd5e1">📎 💬</span></div></div>`).join('')}</div>
+    </div>`).join('')}
+  </div>`;
+}
+window._tableHTML='';
+window._kanbanHTML='';
+
+/* ── Charts ───────────────────────────────────── */
+function initDashboardCharts(){
+  const ac=document.getElementById('areaChart');
+  if(ac){
+    chartRegistry['areaChart']=new Chart(ac,{
+      type:'line',
+      data:{labels:areaData.labels,datasets:[
+        {label:'Active Tasks',data:areaData.tasks,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.08)',fill:true,tension:.4,borderWidth:2,pointRadius:0},
+        {label:'Completed',data:areaData.done,borderColor:G,backgroundColor:'rgba(26,92,56,.1)',fill:true,tension:.4,borderWidth:2,pointRadius:0},
+      ]},
+      options:{responsive:true,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,bodyFont:{size:11},titleFont:{size:11}}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#94a3b8'}},y:{grid:{color:'#f1f5f9'},ticks:{font:{size:10},color:'#94a3b8'}}}}
+    });
+  }
+  const pc=document.getElementById('pieChart');
+  if(pc){
+    chartRegistry['pieChart']=new Chart(pc,{
+      type:'doughnut',
+      data:{labels:pieData.map(d=>d.l),datasets:[{data:pieData.map(d=>d.v),backgroundColor:pieData.map(d=>d.c),borderWidth:2,borderColor:'#fff'}]},
+      options:{responsive:true,cutout:'65%',plugins:{legend:{display:false},tooltip:{bodyFont:{size:11},titleFont:{size:11}}}}
+    });
+  }
+}
+
+function initReportCharts(){
+  const bc=document.getElementById('barChart');
+  if(bc){
+    chartRegistry['barChart']=new Chart(bc,{
+      type:'bar',
+      data:{labels:barData.labels,datasets:[
+        {label:'Total',data:barData.total,backgroundColor:'#dbeafe',borderRadius:4},
+        {label:'Completed',data:barData.completed,backgroundColor:G,borderRadius:4},
+      ]},
+      options:{responsive:true,plugins:{legend:{display:false},tooltip:{bodyFont:{size:11}}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#94a3b8'}},y:{grid:{color:'#f1f5f9'},ticks:{font:{size:10},color:'#94a3b8'}}}}
+    });
+  }
+  const lc=document.getElementById('lineChart');
+  if(lc){
+    chartRegistry['lineChart']=new Chart(lc,{
+      type:'line',
+      data:{labels:areaData.labels,datasets:[{label:'Projects',data:[4,6,8,7,11,14,12,16,18],borderColor:G,backgroundColor:'rgba(26,92,56,.1)',fill:true,tension:.4,borderWidth:2,pointRadius:3,pointBackgroundColor:G}]},
+      options:{responsive:true,plugins:{legend:{display:false},tooltip:{bodyFont:{size:11}}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#94a3b8'}},y:{grid:{color:'#f1f5f9'},ticks:{font:{size:10},color:'#94a3b8'}}}}
+    });
+  }
+}
+
+/* ── Sidebar collapse ─────────────────────────── */
+let collapsed=false;
+document.getElementById('collapseBtn').onclick=function(){
+  collapsed=!collapsed;
+  const sb=document.getElementById('sidebar');
+  sb.classList.toggle('col',collapsed);
+  this.textContent=collapsed?'→':'←';
+};
+
+/* ── Notifications toggle ─────────────────────── */
+document.getElementById('notifBtn').onclick=function(e){
+  e.stopPropagation();
+  const d=document.getElementById('notifDrop');
+  d.style.display=d.style.display==='none'?'block':'none';
+};
+document.addEventListener('click',()=>{
+  const d=document.getElementById('notifDrop');
+  if(d)d.style.display='none';
+});
+
+/* ── Boot ─────────────────────────────────────── */
+render('dashboard');
+</script>
+</body>
+</html>
